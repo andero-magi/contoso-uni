@@ -68,5 +68,103 @@ namespace ContosoUni.Controllers
 
             return View(student);
         }
+
+        public async Task<IActionResult> Edit(int? id)
+        {
+            var student = await FindStudentAsync(id);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return View(student);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Edit")]
+        public async Task<IActionResult> EditStudent(int? id)
+        {
+            var student = await FindStudentAsync(id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            if (!await TryUpdateModelAsync<Student>(
+                student, 
+                "", 
+                s => s.FirstMidName, s => s.LastName, s => s.EnrollmentDate))
+            {
+                return View(student);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException)
+            {
+                //Log the error (uncomment ex variable name and write a log.)
+                ModelState.AddModelError("", "Unable to save changes. " +
+                    "Try again, and if the problem persists, " +
+                    "see your system administrator.");
+            }
+
+            return View(student);
+        }
+
+        public async Task<IActionResult> Delete(int? id, bool? error = false)
+        {
+            Student? student = await FindStudentAsync(id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            if (error.GetValueOrDefault())
+            {
+                ViewData["ErrorMessage"] =
+                    "Delete failed. Try again, and if the problem persists " +
+                    "see your system administrator.";
+            }
+
+            return View(student);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirm(int? id)
+        {
+            Student? student = await FindStudentAsync(id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                _context.Students.Remove(student);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException)
+            {
+                return RedirectToAction(nameof(Delete), new { id = id, error = true });
+            }
+        }
+
+        private async Task<Student?> FindStudentAsync(int? id)
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            return await _context.Students.FirstOrDefaultAsync(m => m.ID == id);
+        }
     }
 }

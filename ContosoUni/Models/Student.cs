@@ -1,4 +1,6 @@
-﻿namespace ContosoUni.Models
+﻿using System.Runtime.InteropServices;
+
+namespace ContosoUni.Models
 {
     public class Student
     {
@@ -7,6 +9,6 @@
         public string FirstMidName { get; set; }
         public DateTime EnrollmentDate { get; set; }
 
-        public ICollection<Enrollment> Enrollments { get; set; }
+        public ICollection<Enrollment>? Enrollments { get; set; }
     }
 }
